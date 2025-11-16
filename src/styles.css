@@ -1,0 +1,156 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+/* Dark mode colors. */
+:root {
+    --sl-color-accent-low: #3e1223;
+    --sl-color-accent: #bf0166;
+    --sl-color-accent-high: #f370a4;
+    --sl-color-white: #f2ece4;
+    --sl-color-gray-1: #ededf1;
+    --sl-color-gray-2: #c1c1c6;
+    --sl-color-gray-3: #8a8b92;
+    --sl-color-gray-4: #57575e;
+    --sl-color-gray-5: #37373e;
+    --sl-color-gray-6: #26262c;
+    --sl-color-black: #1c1c22;
+
+    --sl-home-hero-image-background-image: linear-gradient(-45deg, #1d8ee1 50%, #f03d8c 50%);
+    --sl-home-hero-image-filter: blur(90px);
+
+    --sl-font-system-mono:
+        "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+
+    --sl-color-code-bg-1: rgba(237, 255, 240, 0.02);
+    --sl-color-code-bg-2: rgba(238, 237, 255, 0.05);
+}
+
+/* Light mode colors. */
+:root[data-theme="light"] {
+    --sl-color-accent-low: #e2cef0;
+    --sl-color-accent: #913abf;
+    --sl-color-accent-high: #431f57;
+    --sl-color-white: #1c1c22;
+    --sl-color-gray-1: #2a2620;
+    --sl-color-gray-2: #3c3731;
+    --sl-color-gray-3: #5c5750;
+    --sl-color-gray-4: #908b83;
+    --sl-color-gray-5: #c4c1be;
+    --sl-color-gray-6: #f0edea;
+    --sl-color-gray-7: #f4f1eb;
+    --sl-color-black: #f9f7f6;
+
+    /* --sl-home-hero-image-background-image: linear-gradient(-45deg, #1d8ee1 50%, #f03d8c 50%); */
+
+    --sl-color-code-bg-1: #faf9f6;
+    --sl-color-code-bg-2: #ffffff;
+}
+
+.image-src {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -45%);
+
+    height: auto;
+    max-width: 450px;
+}
+
+.image-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    width: 450px;
+    height: 450px;
+    background-image: var(--sl-home-hero-image-background-image);
+    filter: var(--sl-home-hero-image-filter);
+    transform: translate(-50%, -50%);
+}
+
+.image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    transform: translate(-32px, -32px);
+}
+
+figcaption {
+    opacity: 65%;
+    font-size: var(--sl-text-sm);
+    margin-top: 0.25rem !important;
+    text-align: center;
+}
+
+.sidebar-content a[href="/#"] {
+    opacity: 40%;
+    pointer-events: none;
+}
+
+.sl-markdown-content code:not(:where(.not-content *)) {
+    border-radius: 0.2rem;
+}
+
+.expressive-code .frame pre {
+    background: linear-gradient(var(--sl-color-code-bg-1), var(--sl-color-code-bg-2)) !important;
+}
+
+.expressive-code pre {
+    border: 1px solid rgb(from var(--sl-color-gray-5) r g b / 0.75) !important;
+    border-radius: 0.5rem !important;
+}
+
+.expressive-code .frame.is-terminal pre {
+    border-top: none !important;
+    border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+.expressive-code .frame.is-terminal .header {
+    background: var(--sl-color-code-bg-2) !important;
+    border: 1px solid rgb(from var(--sl-color-gray-5) r g b / 0.75) !important;
+}
+
+.expressive-code .frame.is-terminal .header::after {
+    border-bottom: unset !important;
+}
+
+.expressive-code .frame.is-terminal .header::before {
+    width: 2.52rem !important;
+    height: 0.672rem !important;
+}
+
+.expressive-code .frame.has-title pre {
+    border-top-width: 0px !important;
+    border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+.expressive-code .frame {
+    border-radius: 0.5rem !important;
+    box-shadow: 0rem 0.1rem 0.15rem rgba(0, 0, 0, 0.075);
+}
+
+.expressive-code .frame .header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+details details summary span.large {
+    font-size: var(--sl-text-sm);
+}
+
+@media (prefers-color-scheme: dark) {
+    .expressive-code .frame.has-title:not(.is-terminal) .header {
+        background: var(--sl-color-black) !important;
+    }
+
+    .expressive-code .frame.has-title:not(.is-terminal) .title {
+        background: rgba(36, 35, 43, 0.3) !important;
+        background-clip: padding-box !important;
+        border-right: 1px solid var(--sl-color-gray-6) !important;
+    }
+
+    .expressive-code .frame.has-title:not(.is-terminal) .header::before {
+        border: var(--ec-brdWd) solid var(--sl-color-gray-6) !important;
+    }
+}

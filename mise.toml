@@ -1,0 +1,33 @@
+[tools]
+node = "latest"
+pnpm = "latest"
+
+[hooks]
+postinstall = "pnpm install"
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.dev]
+description = "Run the development server"
+run = "astro dev"
+
+[tasks.build]
+description = "Build the documentation"
+run = "astro build"
+
+[tasks.preview]
+description = "Preview the built documentation"
+run = "astro preview"
+
+[tasks.fmt]
+description = "Format the entire repository"
+run = "prettier --write ."
+
+[tasks.lint]
+description = "Lint the entire repository"
+run = "biome check --write --unsafe ."
+
+[tasks.fix]
+description = "Format and lint the entire repository"
+depends = [":fmt", ":lint"]
