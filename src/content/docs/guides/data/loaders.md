@@ -1,9 +1,8 @@
 ---
-title: Loaders
+title: Loading Data
 ---
 
 - Caching
-- Keys
 
 ### Defining loaders
 
@@ -12,15 +11,13 @@ import { Loader } from "@loopui/data";
 
 const BASE_URL = "/api/contacts";
 
-export const listContacts = new Loader(async (query?: string) => {
+export let listContacts = new Loader(async (query?: string) => {
     let url = BASE_URL;
-    if (query) {
-        url = `${url}?${encodeURIComponent(query)}`;
-    }
-    await fetch<ContactRecord[]>(url);
+    if (query) url = `${url}?${encodeURIComponent(query)}`;
+    return await fetch<ContactRecord[]>(url);
 });
 
-export const showContact = new Loader((id: number) =>
+export let showContact = new Loader((id: number) =>
     fetch<ContactRecord>(`${BASE_URL}/${id}`),
 );
 
@@ -36,9 +33,15 @@ import { listContacts } from "./loaders.ts";
 let contacts;
 let loading = false;
 
+const TERM = "Mark";
+
+// use `await` if you want to warm the cache
+let preloadPromise = listContacts.fetch(TERM);
+
 try {
     loading = true;
-    contacts = await listContacts.fetch("Mark");
+    // Warms the cache if key is invalid, otherwise just reads from the cache
+    contacts = await listContacts.fetch(TERM);
 } catch (error) {
     console.error(error);
 } finally {
@@ -55,33 +58,33 @@ import { listContacts } from "./loaders.ts";
 let contacts = [];
 let loading = false;
 
-const KEY = "Leah";
+const TERM = "Leah";
 
-// use `await` if you want to warm the cache
-let preloadPromise = listContacts.fetch(KEY);
+// use `await` if you want to warm the cache before
+// listening to state changes
+let preloadPromise = listContacts.fetch(TERM);
 
-on(listContacts, {
-    statechange({ input, state: { status, value, error } }) {
-        const [name] = input;
-        if (name === KEY) {
-            // const {
-            //     input,
-            //     state: { status, value, error },
-            // } = loaders.contacts.list.peek(KEY);
+let search = listContacts.filter(([name]) => name === TERM);
 
-            switch (status) {
-                case "pending": {
-                    loading = true;
-                }
-                case "success": {
-                    contacts = value;
-                }
-                case "error": {
-                    console.error(error);
-                }
-                case "idle": {
-                    loading = false;
-                }
+on(search, {
+    statechange(event) {
+        // event.input[0] === TERM
+        // Get the latest state using `.get()`
+        // let { status, value, error } = search.get(TERM);
+
+        // Or read the latest state from the event
+        switch (event.state.status) {
+            case "pending": {
+                loading = true;
+            }
+            case "success": {
+                contacts = event.state.value;
+            }
+            case "error": {
+                console.error(event.state.error);
+            }
+            case "idle": {
+                loading = false;
             }
         }
     },

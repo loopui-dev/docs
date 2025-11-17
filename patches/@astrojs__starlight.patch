@@ -1,0 +1,191 @@
+diff --git a/user-components/Icon.astro b/user-components/Icon.astro
+index 16b24dee5916ea734356efa0ea0e3ee204ca5083..c9e037ddd58dba83d1c14965581b05bc47a9b244 100644
+--- a/user-components/Icon.astro
++++ b/user-components/Icon.astro
+@@ -1,42 +1,68 @@
+ ---
+ import { Icons, type StarlightIcon } from '../components/Icons';
++import fs from 'node:fs';
++import path from 'node:path';
+ 
+ interface Props {
+-	name: StarlightIcon;
+-	label?: string;
+-	color?: string;
+-	size?: string;
+-	class?: string;
++  name: StarlightIcon | string;
++  label?: string;
++  color?: string;
++  size?: string;
++  class?: string;
+ }
+ 
+ const { name, label, size = '1em', color } = Astro.props;
+ const a11yAttrs = label ? ({ 'aria-label': label } as const) : ({ 'aria-hidden': 'true' } as const);
+ 
+-/**
+- * The fragment around the element is used as a workaround to avoid a trailing whitespace in the output.
+- * @see https://github.com/withastro/compiler/issues/1003
+- */
++let innerSvg: string;
++let viewBox = '0 0 24 24';
++
++if (typeof name === 'string' && name.endsWith('.svg')) {
++  // CUSTOM SVG FROM /public
++  const rel = name.startsWith('/') ? name.slice(1) : name;
++  const filePath = path.join(process.cwd(), 'public', rel);
++  const raw = fs.readFileSync(filePath, 'utf8');
++
++  // Grab the viewBox and inner markup from the <svg> tag
++  const match = raw.match(/<svg[^>]*viewBox="([^"]+)"[^>]*>([\s\S]*?)<\/svg>/i);
++
++  if (match) {
++    viewBox = match[1];
++    innerSvg = match[2];
++  } else {
++    // fallback: no <svg> wrapper, just use the whole file contents
++    innerSvg = raw;
++  }
++
++  // Normalize fills/strokes to currentColor (except "none")
++  innerSvg = innerSvg
++    .replace(/fill="(?!none)[^"]*"/gi, 'fill="currentColor"')
++    .replace(/stroke="(?!none)[^"]*"/gi, 'stroke="currentColor"');
++} else {
++  // BUILT-IN STARLIGHT ICON
++  innerSvg = Icons[name as StarlightIcon];
++}
+ ---
+ 
+ <>
+-	<svg
+-		{...a11yAttrs}
+-		class={Astro.props.class}
+-		width="16"
+-		height="16"
+-		viewBox="0 0 24 24"
+-		fill="currentColor"
+-		set:html={Icons[name]}
+-	/>
++  <svg
++    {...a11yAttrs}
++    class={Astro.props.class}
++    width="16"
++    height="16"
++    viewBox={viewBox}
++    fill="currentColor"
++    set:html={innerSvg}
++  />
+ </>
+ 
+ <style define:vars={{ 'sl-icon-color': color, 'sl-icon-size': size }}>
+-	@layer starlight.components {
+-		svg {
+-			color: var(--sl-icon-color);
+-			font-size: var(--sl-icon-size, 1em);
+-			width: 1em;
+-			height: 1em;
+-		}
+-	}
++  @layer starlight.components {
++    svg {
++      color: var(--sl-icon-color);
++      font-size: var(--sl-icon-size, 1em);
++      width: 1em;
++      height: 1em;
++    }
++  }
+ </style>
+diff --git a/user-components/TabItem.astro b/user-components/TabItem.astro
+index 0bd9fa6df544d380f3636f7e85ee829d41581ed0..dd88fc26f7c24331a0487a4b101b572018fcbf1d 100644
+--- a/user-components/TabItem.astro
++++ b/user-components/TabItem.astro
+@@ -3,17 +3,18 @@ import { TabItemTagname } from './rehype-tabs';
+ import type { StarlightIcon } from '../components/Icons';
+ 
+ interface Props {
+-	icon?: StarlightIcon;
++	icon?: StarlightIcon | string;
+ 	label: string;
++	size?: string;
+ }
+ 
+-const { icon, label } = Astro.props;
++const { icon, label, size } = Astro.props;
+ 
+ if (!label) {
+ 	throw new Error('Missing prop `label` on `<TabItem>` component.');
+ }
+ ---
+ 
+-<TabItemTagname data-label={label} data-icon={icon}>
++<TabItemTagname data-label={label} data-icon={icon} data-size={size}>
+ 	<slot />
+ </TabItemTagname>
+diff --git a/user-components/Tabs.astro b/user-components/Tabs.astro
+index d8fa647889eac3c41717e1ab8f6f533ad03d0ed9..85fa89dc9dba72e2a932b1167a0570403c30d9bd 100644
+--- a/user-components/Tabs.astro
++++ b/user-components/Tabs.astro
+@@ -30,11 +30,9 @@ const { html, panels } = processPanels(panelHtml);
+  */
+ const isSynced = syncKey !== undefined;
+ const didRenderSyncedTabsRestoreScriptSymbol = Symbol.for('starlight:did-render-synced-tabs-restore-script');
+-// @ts-expect-error - See above
+ const shouldRenderSyncedTabsRestoreScript = isSynced && Astro.locals[didRenderSyncedTabsRestoreScriptSymbol] !== true;
+ 
+ if (isSynced) {
+-	// @ts-expect-error - See above
+ 	Astro.locals[didRenderSyncedTabsRestoreScriptSymbol] = true
+ }
+ ---
+@@ -75,7 +73,8 @@ if (isSynced) {
+ 		panels && (
+ 			<div class="tablist-wrapper not-content">
+ 				<ul role="tablist">
+-					{panels.map(({ icon, label, panelId, tabId }, idx) => (
++					{panels.map(({ icon, label, size, panelId, tabId }, idx) => {
++						return(
+ 						<li role="presentation" class="tab">
+ 							<a
+ 								role="tab"
+@@ -84,11 +83,11 @@ if (isSynced) {
+ 								aria-selected={idx === 0 ? 'true' : 'false'}
+ 								tabindex={idx !== 0 ? -1 : 0}
+ 							>
+-								{icon && <Icon name={icon} />}
++								{icon && <Icon size={size} name={icon} />}
+ 								{label}
+ 							</a>
+ 						</li>
+-					))}
++					)})}
+ 				</ul>
+ 			</div>
+ 		)
+diff --git a/user-components/rehype-tabs.ts b/user-components/rehype-tabs.ts
+index b989a81fda897aedfbbd9438d62eeca1a4cc176d..a04e0866b31b919d5cd1dc9ce2ac27586a7b1c7e 100644
+--- a/user-components/rehype-tabs.ts
++++ b/user-components/rehype-tabs.ts
+@@ -8,6 +8,7 @@ interface Panel {
+ 	panelId: string;
+ 	tabId: string;
+ 	label: string;
++	size: string;
+ 	icon?: StarlightIcon;
+ }
+ 
+@@ -61,11 +62,12 @@ const tabsProcessor = rehype()
+ 					return CONTINUE;
+ 				}
+ 
+-				const { dataLabel, dataIcon } = node.properties;
++				const { dataLabel, dataIcon, dataSize } = node.properties;
+ 				const ids = getIDs();
+ 				const panel: Panel = {
+ 					...ids,
+ 					label: String(dataLabel),
++					size: String(dataSize),
+ 				};
+ 				if (dataIcon) panel.icon = String(dataIcon) as StarlightIcon;
+ 				file.data.panels?.push(panel);
