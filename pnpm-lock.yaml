@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@astrojs/starlight':
-    hash: eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770
+    hash: af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723
     path: patches/@astrojs__starlight.patch
 
 importers:
@@ -15,7 +15,7 @@ importers:
     dependencies:
       '@astrojs/starlight':
         specifier: ^0.36.2
-        version: 0.36.2(patch_hash=eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))
+        version: 0.36.2(patch_hash=af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))
       astro:
         specifier: ^5.6.1
         version: 5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)
@@ -24,7 +24,7 @@ importers:
         version: 0.34.5
       starlight-sidebar-topics:
         specifier: ^0.6.2
-        version: 0.6.2(@astrojs/starlight@0.36.2(patch_hash=eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)))
+        version: 0.6.2(@astrojs/starlight@0.36.2(patch_hash=af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)))
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.5
@@ -2122,7 +2122,7 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.25.76
 
-  '@astrojs/starlight@0.36.2(patch_hash=eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))':
+  '@astrojs/starlight@0.36.2(patch_hash=af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))':
     dependencies:
       '@astrojs/markdown-remark': 6.3.8
       '@astrojs/mdx': 4.3.10(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))
@@ -4289,9 +4289,9 @@ snapshots:
 
   space-separated-tokens@2.0.2: {}
 
-  starlight-sidebar-topics@0.6.2(@astrojs/starlight@0.36.2(patch_hash=eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))):
+  starlight-sidebar-topics@0.6.2(@astrojs/starlight@0.36.2(patch_hash=af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))):
     dependencies:
-      '@astrojs/starlight': 0.36.2(patch_hash=eb4b115ba2e5f875252611b0b8183fc9bf7b77394cc1c61ec1bc38d1f291f770)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))
+      '@astrojs/starlight': 0.36.2(patch_hash=af20ef0fcd8230fd9e7cb4ec941dbbb8c2fc13ee11943c848e494ba733317723)(astro@5.15.7(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3))
       picomatch: 4.0.3
 
   stream-replace-string@2.0.0: {}

@@ -20,13 +20,13 @@ let name = `${PACKAGE_SCOPE}/${p}`;
     <TabItem label="pnpm" icon="pnpm">
         <Code code={`pnpm add ${name}`} lang="sh" />
     </TabItem>
-    <TabItem label="Deno" icon="deno">
+    <TabItem label="Deno" icon={{ light: "/deno-light.svg", dark: "/deno-dark.svg" }}>
         <Code code={`deno add npm:${name}`} lang="sh" />
     </TabItem>
-    <TabItem label="Bun" icon="bun">
+    <TabItem label="Bun" icon={{ light: "/bun-light.svg", dark: "/bun-dark.svg" }}>
         <Code code={`bun add ${name}`} lang="sh" />
     </TabItem>
-    <TabItem label="vlt" icon="/vlt.svg" size="1.25em">
+    <TabItem label="vlt" icon="/vlt-light.svg" size="1.5em">
         <Code code={`vlt add ${name}`} lang="sh" />
     </TabItem>
 </Tabs>

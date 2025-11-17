@@ -1,8 +1,8 @@
 diff --git a/user-components/Icon.astro b/user-components/Icon.astro
-index 16b24dee5916ea734356efa0ea0e3ee204ca5083..c9e037ddd58dba83d1c14965581b05bc47a9b244 100644
+index 16b24dee5916ea734356efa0ea0e3ee204ca5083..0680cf726582a3e9f41aed42dd87a2587b6a3f77 100644
 --- a/user-components/Icon.astro
 +++ b/user-components/Icon.astro
-@@ -1,42 +1,68 @@
+@@ -1,42 +1,89 @@
  ---
  import { Icons, type StarlightIcon } from '../components/Icons';
 +import fs from 'node:fs';
@@ -22,38 +22,60 @@ index 16b24dee5916ea734356efa0ea0e3ee204ca5083..c9e037ddd58dba83d1c14965581b05bc
  }
  
  const { name, label, size = '1em', color } = Astro.props;
- const a11yAttrs = label ? ({ 'aria-label': label } as const) : ({ 'aria-hidden': 'true' } as const);
+-const a11yAttrs = label ? ({ 'aria-label': label } as const) : ({ 'aria-hidden': 'true' } as const);
++const a11yAttrs = label
++  ? ({ 'aria-label': label } as const)
++  : ({ 'aria-hidden': 'true' } as const);
  
 -/**
 - * The fragment around the element is used as a workaround to avoid a trailing whitespace in the output.
 - * @see https://github.com/withastro/compiler/issues/1003
 - */
 +let innerSvg: string;
-+let viewBox = '0 0 24 24';
++let viewBox = '0 0 24 24'; // default for built-in icons
 +
 +if (typeof name === 'string' && name.endsWith('.svg')) {
-+  // CUSTOM SVG FROM /public
++  // Custom SVG from /public
 +  const rel = name.startsWith('/') ? name.slice(1) : name;
 +  const filePath = path.join(process.cwd(), 'public', rel);
 +  const raw = fs.readFileSync(filePath, 'utf8');
 +
-+  // Grab the viewBox and inner markup from the <svg> tag
-+  const match = raw.match(/<svg[^>]*viewBox="([^"]+)"[^>]*>([\s\S]*?)<\/svg>/i);
++  // Extract viewBox + inner content from the original <svg>
++  const match = raw.match(
++    /<svg[^>]*viewBox="([^"]+)"[^>]*>([\s\S]*?)<\/svg>/i,
++  );
 +
 +  if (match) {
 +    viewBox = match[1];
 +    innerSvg = match[2];
 +  } else {
-+    // fallback: no <svg> wrapper, just use the whole file contents
++    // Fallback: no wrapping <svg>, just use the raw content
 +    innerSvg = raw;
 +  }
 +
-+  // Normalize fills/strokes to currentColor (except "none")
++  // Normalize fill/stroke attributes
 +  innerSvg = innerSvg
 +    .replace(/fill="(?!none)[^"]*"/gi, 'fill="currentColor"')
 +    .replace(/stroke="(?!none)[^"]*"/gi, 'stroke="currentColor"');
++
++  // Normalize inline style fills/strokes (e.g. style="fill:white;stroke:#000;")
++  innerSvg = innerSvg.replace(
++    /style="([^"]*)"/gi,
++    (_m, style: string) => {
++      let s = style
++        .replace(
++          /fill\s*:\s*(?!none)[^;"]*/gi,
++          'fill:currentColor',
++        )
++        .replace(
++          /stroke\s*:\s*(?!none)[^;"]*/gi,
++          'stroke:currentColor',
++        );
++      return `style="${s}"`;
++    },
++  );
 +} else {
-+  // BUILT-IN STARLIGHT ICON
++  // Built-in Starlight icon
 +  innerSvg = Icons[name as StarlightIcon];
 +}
  ---
@@ -98,15 +120,15 @@ index 16b24dee5916ea734356efa0ea0e3ee204ca5083..c9e037ddd58dba83d1c14965581b05bc
 +  }
  </style>
 diff --git a/user-components/TabItem.astro b/user-components/TabItem.astro
-index 0bd9fa6df544d380f3636f7e85ee829d41581ed0..dd88fc26f7c24331a0487a4b101b572018fcbf1d 100644
+index 0bd9fa6df544d380f3636f7e85ee829d41581ed0..7676fde22c44abf8fba8ef12c52be5d5aafe569a 100644
 --- a/user-components/TabItem.astro
 +++ b/user-components/TabItem.astro
-@@ -3,17 +3,18 @@ import { TabItemTagname } from './rehype-tabs';
+@@ -3,17 +3,26 @@ import { TabItemTagname } from './rehype-tabs';
  import type { StarlightIcon } from '../components/Icons';
  
  interface Props {
 -	icon?: StarlightIcon;
-+	icon?: StarlightIcon | string;
++	icon?: StarlightIcon | string | {light?: StarlightIcon | string, dark?: StarlightIcon | string};
  	label: string;
 +	size?: string;
  }
@@ -117,14 +139,22 @@ index 0bd9fa6df544d380f3636f7e85ee829d41581ed0..dd88fc26f7c24331a0487a4b101b5720
  if (!label) {
  	throw new Error('Missing prop `label` on `<TabItem>` component.');
  }
++
++let lightIcon = icon;
++let darkIcon: string | undefined;
++
++if (typeof icon !== 'string') {
++	lightIcon = icon?.light;
++	darkIcon = icon?.dark;
++}
  ---
  
 -<TabItemTagname data-label={label} data-icon={icon}>
-+<TabItemTagname data-label={label} data-icon={icon} data-size={size}>
++<TabItemTagname data-label={label} data-icon={lightIcon} data-icon-dark={darkIcon} data-size={size}>
  	<slot />
  </TabItemTagname>
 diff --git a/user-components/Tabs.astro b/user-components/Tabs.astro
-index d8fa647889eac3c41717e1ab8f6f533ad03d0ed9..85fa89dc9dba72e2a932b1167a0570403c30d9bd 100644
+index d8fa647889eac3c41717e1ab8f6f533ad03d0ed9..827d695f67a8b987e0b7d9d30fa113505fed0ca9 100644
 --- a/user-components/Tabs.astro
 +++ b/user-components/Tabs.astro
 @@ -30,11 +30,9 @@ const { html, panels } = processPanels(panelHtml);
@@ -144,17 +174,32 @@ index d8fa647889eac3c41717e1ab8f6f533ad03d0ed9..85fa89dc9dba72e2a932b1167a057040
  			<div class="tablist-wrapper not-content">
  				<ul role="tablist">
 -					{panels.map(({ icon, label, panelId, tabId }, idx) => (
-+					{panels.map(({ icon, label, size, panelId, tabId }, idx) => {
++					{panels.map(({ icon, iconDark, label, size, panelId, tabId }, idx) => {
 +						return(
  						<li role="presentation" class="tab">
  							<a
  								role="tab"
-@@ -84,11 +83,11 @@ if (isSynced) {
+@@ -84,11 +83,26 @@ if (isSynced) {
  								aria-selected={idx === 0 ? 'true' : 'false'}
  								tabindex={idx !== 0 ? -1 : 0}
  							>
 -								{icon && <Icon name={icon} />}
-+								{icon && <Icon size={size} name={icon} />}
++								{icon && (
++								<>
++									{/* Light mode icon */}
++									<Icon
++									name={icon}
++									size={size}
++									class="sl-tab-icon sl-tab-icon--light"
++									/>
++									{/* Dark mode icon (fallback to light if not provided) */}
++									<Icon
++									name={iconDark ?? icon}
++									size={size}
++									class="sl-tab-icon sl-tab-icon--dark"
++									/>
++								</>
++								)}
  								{label}
  							</a>
  						</li>
@@ -163,29 +208,53 @@ index d8fa647889eac3c41717e1ab8f6f533ad03d0ed9..85fa89dc9dba72e2a932b1167a057040
  				</ul>
  			</div>
  		)
+@@ -99,6 +113,18 @@ if (isSynced) {
+ 
+ <style>
+ 	@layer starlight.components {
++		.sl-tab-icon--dark {
++			display: none;
++		}
++
++		html[data-theme='dark'] .sl-tab-icon--dark {
++			display: inline-block;
++		}
++
++		html[data-theme='dark'] .sl-tab-icon--light {
++			display: none;
++		}
++
+ 		starlight-tabs {
+ 			display: block;
+ 		}
 diff --git a/user-components/rehype-tabs.ts b/user-components/rehype-tabs.ts
-index b989a81fda897aedfbbd9438d62eeca1a4cc176d..a04e0866b31b919d5cd1dc9ce2ac27586a7b1c7e 100644
+index b989a81fda897aedfbbd9438d62eeca1a4cc176d..53f1837ff169ff6f0804898e6477781171ee5bec 100644
 --- a/user-components/rehype-tabs.ts
 +++ b/user-components/rehype-tabs.ts
-@@ -8,6 +8,7 @@ interface Panel {
+@@ -8,7 +8,9 @@ interface Panel {
  	panelId: string;
  	tabId: string;
  	label: string;
-+	size: string;
++	size?: string;
  	icon?: StarlightIcon;
++	iconDark?: StarlightIcon;
  }
  
-@@ -61,11 +62,12 @@ const tabsProcessor = rehype()
+ declare module 'vfile' {
+@@ -61,13 +63,15 @@ const tabsProcessor = rehype()
  					return CONTINUE;
  				}
  
 -				const { dataLabel, dataIcon } = node.properties;
-+				const { dataLabel, dataIcon, dataSize } = node.properties;
++				const { dataLabel, dataIcon, dataIconDark, dataSize } = node.properties;
  				const ids = getIDs();
  				const panel: Panel = {
  					...ids,
  					label: String(dataLabel),
-+					size: String(dataSize),
  				};
  				if (dataIcon) panel.icon = String(dataIcon) as StarlightIcon;
++				if (dataIconDark) panel.iconDark = String(dataIconDark) as StarlightIcon;
++				if (dataSize) panel.size = String(dataSize);
  				file.data.panels?.push(panel);
+ 
+ 				// Remove `<TabItem>` props
